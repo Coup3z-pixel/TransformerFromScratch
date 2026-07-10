@@ -85,20 +85,7 @@ class Node {
     Node() = default;
 
     double process(std::vector<double> input) {
-      double embedded_val = std::inner_product(weights.begin(), weights.end(), input.begin(), 0.0) + bias;
-
-      switch (activation_func) {
-        case ActivationFunction::relu:
-          return std::max(0.0, embedded_val);
-          break;
-        case ActivationFunction::sigmoid:
-          return embedded_val;
-          break;
-        default:
-          break;
-      }
-
-      return embedded_val;
+      return std::inner_product(weights.begin(), weights.end(), input.begin(), 0.0) + bias;
     }
 
     std::vector<double>& get_weights() {
@@ -195,7 +182,7 @@ class HiddenLayer
 
       for (size_t i = 0; i < num_of_nodes; i++) {
         Node curr_node = nodes[i];
-        curr_layer[i] = curr_node.process(prev_layer);
+        curr_layer[i] = activation_function(curr_node.process(prev_layer));
       }
 
       return curr_layer;
@@ -249,12 +236,15 @@ class Network
         std::vector<double> true_output = Y[m];
         double loss_derivative = prev_layer[0] - true_output[0];
         loss = 0.5 * std::pow((true_output[0] - prev_layer[0]), 2); // 0.5(y - y')^2
+        std::cout << prev_layer[0] << "\n";
         total_loss += loss;
 
         int num_of_nodes = layers[layers.size() - 1].get_num_of_nodes();
 
+        std::function<double(double)> output_layer_activation_derivative = layers[layers.size() - 1].get_activation_derivative();
+
         for (int i = 0; i < activations[activations.size() - 1].size(); i++) {
-          error_weights[error_weights.size() - 1][i] = loss_derivative * relu_derivative(activations[activations.size() - 1][i]);
+          error_weights[error_weights.size() - 1][i] = loss_derivative * output_layer_activation_derivative(activations[activations.size() - 1][i]);
         }
 
         // back propogation on the remaining layers
