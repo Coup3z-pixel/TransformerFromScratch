@@ -101,23 +101,24 @@ export class Network
 
         // Getting the partial derivative of the loss function
         // With respect to the activation of the output layer nodes
-        for (int i = 0; i < activations[activation_final_layer_idx].size(); i++) {
+        for (int i{}; i < activations[activation_final_layer_idx].size(); i++) {
           double output_layer_derivative = output_layer_activation_derivative(activations[activation_final_layer_idx][i]);
           double activation_layer_derivative = loss_derivatives[i] * output_layer_derivative;
           error_weights[error_weights_final_layer_idx][i] = activation_layer_derivative;
         }
 
         // carry the delta backwards
+        // TODO: diagnose why it takes so long
         for (int l = layers.size() - 2; l >= 0; l--) {
           int current_layer_nodes = layers[l].get_num_of_nodes();
           int next_layer_nodes = layers[l + 1].get_num_of_nodes();
           std::function<double(double)> layer_derivative_function = layers[l].get_activation_derivative();
 
-          for (int n = 0; n < current_layer_nodes; n++) {
+          for (int n{}; n < current_layer_nodes; n++) {
             double sum = 0.0;
-            for (int next_n = 0; next_n < next_layer_nodes; next_n++) {
-              double weight = layers[l + 1].get_node(next_n).get_weights()[n];
-              sum += weight * error_weights[l + 1][next_n];
+            auto weights = layers[l + 1].get_layer_weights();
+            for (int next_n{}; next_n < next_layer_nodes; next_n++) {
+              sum += weights[next_n][n] * error_weights[l + 1][next_n];
             }
 
             double node_activation = activations[l][n];
@@ -126,14 +127,14 @@ export class Network
         }
 
         // update weights
-        for (int l = 0; l < layers.size(); l++) {
-          for (int n = 0; n < layers[l].get_num_of_nodes(); n++) {
+        for (int l{}; l < layers.size(); l++) {
+          for (int n{}; n < layers[l].get_num_of_nodes(); n++) {
             double node_error = error_weights[l][n];
 
             double bias_gradient_step = learning_rate * node_error;
-            layers[l].get_node(n).adjust_bias(bias_gradient_step);
+            layers[l].adjust_bias(n, bias_gradient_step);
 
-            for (int w = 0; w < layers[l].get_node(n).get_num_of_weights(); w++) {
+            for (int w{}; w < layers[l].get_num_of_weights(); w++) {
               double input_activation = (l == 0) ? X_train[m][w] : activations[l - 1][w];
 
               double gradient_step = learning_rate * node_error * input_activation;
@@ -170,5 +171,4 @@ export class Network
       total_loss = 0;
     }
   }
-
 };

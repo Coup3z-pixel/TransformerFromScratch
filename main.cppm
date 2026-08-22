@@ -43,7 +43,7 @@ int main() {
       Y_train,
       X_test,
       Y_test,
-      10000,
+      20,
       0.001
     );
 
