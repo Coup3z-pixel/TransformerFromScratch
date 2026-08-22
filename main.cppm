@@ -29,8 +29,8 @@ int main() {
       HiddenLayer(256, ActivationFunction::relu),
       HiddenLayer(128, ActivationFunction::relu),
       HiddenLayer(64, ActivationFunction::relu),
-      HiddenLayer(10, ActivationFunction::relu),
-      });
+      HiddenLayer(MNIST_LABEL_AMOUNTS, ActivationFunction::relu),
+      }, LossFunctions::CatergoricalCross);
 
   auto [X_train, raw_Y_train] = load_mnist("data/train-images.idx3-ubyte", "data/train-labels.idx1-ubyte");
   auto [X_test, raw_Y_test] = load_mnist("data/t10k-images.idx3-ubyte", "data/t10k-labels.idx1-ubyte");
@@ -44,7 +44,7 @@ int main() {
       X_test,
       Y_test,
       10000,
-      0.3
+      0.001
     );
 
   return 0;

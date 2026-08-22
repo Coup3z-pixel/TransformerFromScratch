@@ -46,7 +46,7 @@ export double relu(double x) {
 
 export double relu_derivative(double activated_val) {
     if (activated_val <= 0.0) {
-        return 0.01;
+        return 0.001;
     }
     return 1.0;
 }

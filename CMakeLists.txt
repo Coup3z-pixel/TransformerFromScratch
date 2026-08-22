@@ -13,6 +13,7 @@ target_sources(NN
       nn/Node.cppm
       nn/Layer.cppm
       nn/NeuralNetwork.cppm
+      nn/utils/VectorUtils.cppm
       nn/utils/loss/loss.cppm
       loader/mnist/loader.cppm
 )

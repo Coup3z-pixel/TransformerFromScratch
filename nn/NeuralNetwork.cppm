@@ -4,6 +4,7 @@ module;
 #include <iostream>
 #include <functional>
 #include <cmath>
+#define PRINT_EVERY 100
 
 export import loss;
 export module nn.Network;
@@ -14,6 +15,9 @@ export class Network
   std::vector<HiddenLayer> layers;
   std::function<double(std::vector<double>, std::vector<double>)> loss_function;
   std::function<std::vector<double>(std::vector<double>, std::vector<double>)> loss_derivative_function;
+  LossFunctions loss_function_type;
+
+  long total_loss;
 
   public:
   Network(
@@ -21,6 +25,7 @@ export class Network
       std::vector<HiddenLayer> layer_config,
       LossFunctions loss_func_type = LossFunctions::MeanSquared
       ) {
+    loss_function_type = loss_func_type;
     int prev_layer_node_num = input_layer_count;
     int layer_idx = 0;
 
@@ -60,58 +65,49 @@ export class Network
     std::vector<std::vector<double>> activations = std::vector<std::vector<double>>(layers.size());
     std::vector<std::vector<double>> error_weights = std::vector<std::vector<double>>(layers.size());
 
-    double loss = -1.0;
-    double total_loss = 0;
+    total_loss = 0;
     int correct_guesses = 0;
     int dataset_size = X_train.size();
 
-    for (int e = 0; e < epochs; e++) {
+    for (int l{}; l < layers.size(); l++) {
+      error_weights[l] = std::vector<double>(layers[l].get_num_of_nodes());
+    }
+
+    for (int e{}; e < epochs; e++) {
       total_loss = 0;
-      for (int m = 0; m < X_train.size(); m++) {
+      for (int m{}; m < X_train.size(); m++) {
+        // setting up the input layer
         std::vector<double> prev_layer = X_train[m];
 
-        for (int l = 0; l < layers.size(); l++) {
+        // feed forward
+        for (int l{}; l < layers.size(); l++) {
           std::vector<double> layer_result = layers[l].calculate_layer(prev_layer);
           prev_layer = layer_result;
           activations[l] = layer_result;
-          error_weights[l] = std::vector<double>(layer_result.size());
         }
 
         std::vector<double> true_output = Y_train[m];
-        std::vector<double> loss_derivatives = loss_derivative_function(Y_train[m], prev_layer);
-        loss = loss_function(Y_train[m], prev_layer);
+        std::vector<double> loss_derivatives = loss_derivative_function(prev_layer, true_output);
+        total_loss += loss_function(prev_layer, Y_train[m]);;
 
-        total_loss += loss;
-        if (m % 10 == 0) {
-          std::cout << m << ": " << total_loss / 10.0 << "\n";
-          total_loss = 0;
-        }
-
-        double max_seen = -1;
-        int model_guess = -1;
-
-        for (auto i{0}; i < prev_layer.size(); i++) {
-          if (max_seen < prev_layer[i]) {
-            max_seen = prev_layer[i];
-            model_guess = i;
-          }
-        }
-
-        correct_guesses += Y_train[m][model_guess] == 1.0;
-
-        if (m % 100 == 0 && prev_layer.size() > 1) {
-          std::cout << "Accuracy: " << correct_guesses / 100.0 << "\n";
-          correct_guesses = 0;
-        }
+        training_telemetry(true_output, prev_layer, m);
 
         int num_of_nodes = layers[layers.size() - 1].get_num_of_nodes();
 
         std::function<double(double)> output_layer_activation_derivative = layers[layers.size() - 1].get_activation_derivative();
 
-        for (int i = 0; i < activations[activations.size() - 1].size(); i++) {
-          error_weights[error_weights.size() - 1][i] = loss_derivatives[i] * output_layer_activation_derivative(activations[activations.size() - 1][i]);
+        int activation_final_layer_idx = activations.size() - 1;
+        int error_weights_final_layer_idx = error_weights.size() - 1;
+
+        // Getting the partial derivative of the loss function
+        // With respect to the activation of the output layer nodes
+        for (int i = 0; i < activations[activation_final_layer_idx].size(); i++) {
+          double output_layer_derivative = output_layer_activation_derivative(activations[activation_final_layer_idx][i]);
+          double activation_layer_derivative = loss_derivatives[i] * output_layer_derivative;
+          error_weights[error_weights_final_layer_idx][i] = activation_layer_derivative;
         }
 
+        // carry the delta backwards
         for (int l = layers.size() - 2; l >= 0; l--) {
           int current_layer_nodes = layers[l].get_num_of_nodes();
           int next_layer_nodes = layers[l + 1].get_num_of_nodes();
@@ -129,6 +125,7 @@ export class Network
           }
         }
 
+        // update weights
         for (int l = 0; l < layers.size(); l++) {
           for (int n = 0; n < layers[l].get_num_of_nodes(); n++) {
             double node_error = error_weights[l][n];
@@ -145,8 +142,7 @@ export class Network
           }
         }
       }
-      loss = total_loss / dataset_size;
-      std::cout << "Epoch: " << (e + 1) << " | Loss: " << loss << "\n";
+      std::cout << "Epoch: " << (e + 1) << " | Loss: " << (total_loss / dataset_size) << "\n";
     }
   }
 
@@ -165,4 +161,14 @@ export class Network
 
     return prev_layer;
   }
+
+  void training_telemetry(const std::vector<double>& true_y, const std::vector<double>& pred_y, int m) {
+    if (m == 0) return;
+
+    if (m % PRINT_EVERY == 0 && pred_y.size() > 1) {
+      std::cout << m << ": " << total_loss / static_cast<float>(m) << "\n";
+      total_loss = 0;
+    }
+  }
+
 };
