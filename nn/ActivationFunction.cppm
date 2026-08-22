@@ -8,7 +8,7 @@ module;
 #include <random>
 #include <functional>
 
-export module nn.Node;
+export module nn.ActivationFunction;
 
 export enum class ActivationFunction {
   relu,

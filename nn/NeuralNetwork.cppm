@@ -14,6 +14,7 @@ export class Network
 {
   std::vector<HiddenLayer> layers;
   std::function<double(std::vector<double>, std::vector<double>)> loss_function;
+  // derivative with respect to activation (not weighted sum)
   std::function<std::vector<double>(std::vector<double>, std::vector<double>)> loss_derivative_function;
   LossFunctions loss_function_type;
 

@@ -10,7 +10,7 @@ add_library(NN)
 target_sources(NN
   PUBLIC
     FILE_SET cxx_modules TYPE CXX_MODULES FILES
-      nn/Node.cppm
+      nn/ActivationFunction.cppm
       nn/Layer.cppm
       nn/NeuralNetwork.cppm
       nn/utils/VectorUtils.cppm

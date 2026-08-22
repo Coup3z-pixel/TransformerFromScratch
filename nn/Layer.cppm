@@ -9,7 +9,7 @@ module;
 #include <algorithm>
 
 export module nn.Layer;
-export import nn.Node;
+export import nn.ActivationFunction;
 
 std::vector<double> initialize_random_weights(int num_of_input_nodes) {
   static std::random_device rd;
