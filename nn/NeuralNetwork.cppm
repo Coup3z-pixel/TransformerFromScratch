@@ -109,21 +109,28 @@ export class Network
         }
 
         // carry the delta backwards
-        // TODO: diagnose why it takes so long
         for (int l = layers.size() - 2; l >= 0; l--) {
           int current_layer_nodes = layers[l].get_num_of_nodes();
           int next_layer_nodes = layers[l + 1].get_num_of_nodes();
           std::function<double(double)> layer_derivative_function = layers[l].get_activation_derivative();
 
-          for (int n{}; n < current_layer_nodes; n++) {
-            double sum = 0.0;
-            auto weights = layers[l + 1].get_layer_weights();
-            for (int next_n{}; next_n < next_layer_nodes; next_n++) {
-              sum += weights[next_n][n] * error_weights[l + 1][next_n];
-            }
+          auto weights = layers[l + 1].get_layer_weights();
 
+          // Initialize sum array
+          std::vector<double> sum(current_layer_nodes, 0.0);
+
+          // Inner loop over next_layer_nodes for better cache hit rate
+          for (int next_n{}; next_n < next_layer_nodes; next_n++) {
+            double ew = error_weights[l + 1][next_n];
+            const auto& next_weights = weights[next_n];
+            for (int n{}; n < current_layer_nodes; n++) {
+              sum[n] += next_weights[n] * ew;
+            }
+          }
+
+          for (int n{}; n < current_layer_nodes; n++) {
             double node_activation = activations[l][n];
-            error_weights[l][n] = layer_derivative_function(node_activation) * sum;
+            error_weights[l][n] = layer_derivative_function(node_activation) * sum[n];
           }
         }
 
