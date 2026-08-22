@@ -8,7 +8,7 @@ module;
 
 export import loss;
 export module nn.Network;
-export import nn.Layer;
+import nn.layers.adjustable.HiddenLayer;
 
 export class Network
 {

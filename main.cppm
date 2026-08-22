@@ -11,6 +11,10 @@
 
 import mnist;
 import nn.Network;
+import nn.ActivationFunction;
+import nn.layers.adjustable.HiddenLayer;
+import nn.layers.adjustable.Adjustable;
+
 
 std::vector<std::vector<double>> one_state_encode_labels(const std::vector<uint8_t> raw_labels) {
   auto one_state_encoded_labels = std::vector<std::vector<double>>(raw_labels.size());

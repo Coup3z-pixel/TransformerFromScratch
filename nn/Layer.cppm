@@ -27,7 +27,6 @@ std::vector<double> initialize_random_weights(int num_of_input_nodes) {
   return random_weights;
 }
 
-
 export class HiddenLayer
 {
   private:

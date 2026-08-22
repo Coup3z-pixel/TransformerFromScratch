@@ -12,6 +12,10 @@ target_sources(NN
     FILE_SET cxx_modules TYPE CXX_MODULES FILES
       nn/ActivationFunction.cppm
       nn/Layer.cppm
+      nn/layers/adjustable/Adjustable.cppm
+      nn/layers/adjustable/HiddenLayer.cppm
+      nn/layers/Layer.cppm
+      nn/layers/adjustable/utils.cppm
       nn/NeuralNetwork.cppm
       nn/utils/VectorUtils.cppm
       nn/utils/loss/loss.cppm
