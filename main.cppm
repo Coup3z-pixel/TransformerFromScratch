@@ -16,7 +16,7 @@ import nn.layers.adjustable.HiddenLayer;
 import nn.layers.adjustable.Adjustable;
 
 
-std::vector<std::vector<double>> one_state_encode_labels(const std::vector<uint8_t> raw_labels) {
+std::vector<std::vector<double>> one_state_encode_labels(const std::vector<uint8_t>& raw_labels) {
   auto one_state_encoded_labels = std::vector<std::vector<double>>(raw_labels.size());
 
   for (auto&& [index, label] : std::views::enumerate(raw_labels)) {
@@ -28,6 +28,7 @@ std::vector<std::vector<double>> one_state_encode_labels(const std::vector<uint8
 }
 
 int main() {
+  // TODO: change input size to become input dimension (std::array)
   Network neural_network = Network(784, {
       HiddenLayer(512, ActivationFunction::relu),
       HiddenLayer(256, ActivationFunction::relu),
